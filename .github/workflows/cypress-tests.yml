@@ -21,13 +21,20 @@ jobs:
    - name: Install dependencies
      run: npm ci
    - name: Run Cypress tests
-     run: npx cypress run --browser chrome --headless
+     run: npx cypress run e2e/lab1_1.cy.js --browser chrome --headless
    - name: Generate HTML report
      run: |
 
    - name: Upload test artifacts
      uses: actions/upload-artifact@v4
-     if: always()
      with:
       name: cypress-results
       path: |
+       cypress/screenshots
+       cypress/videos
+       cypress/reports
+      if-no-files-found: warn
+      compression-level: 6
+      overwrite: false
+      include-hidden-files: false
+
