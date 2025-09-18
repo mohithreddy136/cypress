@@ -24,6 +24,9 @@ jobs:
      run: npx cypress run --spec "cypress/e2e/lab1_1.cy.js" --browser chrome --headless
    - name: Generate HTML report
      run: |
+        npx mochawesome-merge cypress/reports/*.json > cypress/reports/report.json
+        npx marge cypress/reports/report.json --reportDir cypress/reports/html
+
 
    - name: Upload test artifacts
      uses: actions/upload-artifact@v4
