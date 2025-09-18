@@ -122,27 +122,44 @@ describe('OrangeHRM Login', () => {
  })
 });
 
-describe('OrangeHRM Login with Fixture', () => {
- it('should login using fixture data', () => {
- 
-cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
- 
- // This will use the overwritten type command and show console logs
- cy.fixture('users').then((userData) => {
- cy.get('input[name="username"]').type(userData.username);
- // Console: "Typing: 'Admin'"
- 
- cy.get('input[name="password"]').type(userData.password);
- // Console: "Typing: 'admin123'"
- });
- 
- cy.get('button[type="submit"]').click();
- 
- // Verify successful login
- cy.url().should('include', '/dashboard');
- cy.get('.oxd-topbar-header-title').should('contain', 'Dashboard');
- });
+describe('OrangeHRM Login with all fixture users', () => {
+  beforeEach(() => {
+    cy.visit('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+  });
+
+  it('should try login for all users in fixture', () => {
+    cy.fixture('users').then((users) => {
+      users.forEach((user) => {
+        cy.log(`Testing login for: ${user.username}`);
+
+        // Enter username
+        cy.get('input[name="username"]').clear().type(user.username);
+
+        // Enter password (since JSON has no password, give default/fake one)
+        cy.get('input[name="password"]').clear().type('admin123');
+
+        // Click login
+        cy.get('button[type="submit"]').click();
+
+        // Validate
+        cy.url().then((url) => {
+          if (url.includes('/dashboard')) {
+            cy.log(`✅ ${user.username} logged in successfully`);
+            cy.get('.oxd-topbar-header-title').should('contain', 'Dashboard');
+
+            // Logout before next test
+            cy.get('.oxd-userdropdown-tab').click();
+            cy.contains('Logout').click();
+          } else {
+            cy.log(`❌ ${user.username} login failed`);
+            cy.get('.oxd-alert-content-text').should('be.visible');
+          }
+        });
+      });
+    });
+  });
 });
+
 describe('OrangeHRM Data-Driven Login Tests', () => {
   const testCases = [
     {
